@@ -269,7 +269,7 @@ NSString *kAGRevealViewControllerWillCoverNotification = @"kAGRevealViewControll
     if (nil == _leftViewController)
         return;
     [self addChildViewController:_leftViewController];
-    [self.view insertSubview:_leftViewController.view atIndex:1];
+    [self.view insertSubview:_leftViewController.view atIndex:0];
     CGRect _frame = self.view.bounds;
     _frame.size.width -= kOffsetX;
     [_leftViewController.view setFrame:_frame];
