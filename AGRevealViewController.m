@@ -48,7 +48,7 @@ NSString *kAGRevealViewControllerWillCoverNotification = @"kAGRevealViewControll
 }
 
 - (void)applyTransfromToDirection:(int)direction animated:(BOOL)animated completeBlock:(void(^)(void))block {
-    void (^applyTransformBlock)() = ^{
+    void (^applyTransformBlock)(void) = ^{
         _centerViewController.view.transform = CGAffineTransformMakeTranslation(direction * (CGRectGetWidth(_centerViewController.view.frame)-kOffsetX), 0);
         
         if ([self isLeftSideDisplayed]) {
