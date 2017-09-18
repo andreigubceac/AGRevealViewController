@@ -105,9 +105,9 @@ NSString *kAGRevealViewControllerWillCoverNotification = @"kAGRevealViewControll
         }
     };
     if (direction != 0)
-        [[NSNotificationCenter defaultCenter] postNotificationName:kAGRevealViewControllerWillRevealNotification object:nil];
+        [[NSNotificationCenter defaultCenter] postNotificationName:kAGRevealViewControllerWillRevealNotification object:(direction == 1 ? _leftViewController : _rightViewController)];
     else
-        [[NSNotificationCenter defaultCenter] postNotificationName:kAGRevealViewControllerWillCoverNotification object:nil];
+        [[NSNotificationCenter defaultCenter] postNotificationName:kAGRevealViewControllerWillCoverNotification object:([self isLeftSideDisplayed] ? _leftViewController : _rightViewController)];
     _leftViewController.view.hidden = _rightViewController.view.hidden = NO;
     if (animated == NO) {
         applyTransformBlock();
