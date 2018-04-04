@@ -49,59 +49,59 @@ NSString *kAGRevealViewControllerWillCoverNotification = @"kAGRevealViewControll
 
 - (void)applyTransfromToDirection:(int)direction animated:(BOOL)animated completeBlock:(void(^)(void))block {
     void (^applyTransformBlock)(void) = ^{
-        _centerViewController.view.transform = CGAffineTransformMakeTranslation(direction * (CGRectGetWidth(_centerViewController.view.frame)-kOffsetX), 0);
+        self.centerViewController.view.transform = CGAffineTransformMakeTranslation(direction * (CGRectGetWidth(self->_centerViewController.view.frame)-kOffsetX), 0);
         
         if ([self isLeftSideDisplayed]) {
-            [_leftViewController viewWillAppear:animated];
-            [self.view insertSubview:_leftViewController.view aboveSubview:_rightViewController.view];
+            [self.leftViewController viewWillAppear:animated];
+            [self.view insertSubview:self.leftViewController.view aboveSubview:self.rightViewController.view];
         }
         else if ([self isRightSideDisplayed]) {
-            [_rightViewController viewWillAppear:animated];
-            [self.view insertSubview:_rightViewController.view aboveSubview:_leftViewController.view];
+            [self.rightViewController viewWillAppear:animated];
+            [self.view insertSubview:self.rightViewController.view aboveSubview:self->_leftViewController.view];
         }
         
-        if ([_leftItem respondsToSelector:@selector(setSelected:)])
-            _leftItem.selected = NO;
-        if ([_rightItem respondsToSelector:@selector(setSelected:)])
-            _rightItem.selected = NO;
+        if ([self->_leftItem respondsToSelector:@selector(setSelected:)])
+            self->_leftItem.selected = NO;
+        if ([self->_rightItem respondsToSelector:@selector(setSelected:)])
+            self->_rightItem.selected = NO;
         if (direction != 0) {
             UIView *_centerView = nil;
-            if ([_centerViewController isKindOfClass:[UINavigationController class]]) {
-                _centerView = ((UINavigationController*)_centerViewController).topViewController.view;
-                _leftItem   = (UIButton*)((UINavigationController*)_centerViewController).topViewController.navigationItem.leftBarButtonItem.customView;
-                _rightItem  = (UIButton*)((UINavigationController*)_centerViewController).topViewController.navigationItem.rightBarButtonItem.customView;
+            if ([self->_centerViewController isKindOfClass:[UINavigationController class]]) {
+                _centerView = ((UINavigationController*)self->_centerViewController).topViewController.view;
+                self->_leftItem   = (UIButton*)((UINavigationController*)self->_centerViewController).topViewController.navigationItem.leftBarButtonItem.customView;
+                self->_rightItem  = (UIButton*)((UINavigationController*)self->_centerViewController).topViewController.navigationItem.rightBarButtonItem.customView;
             }
             else {
-                _centerView = _centerViewController.view;
-                _leftItem   = (UIButton*)_centerViewController.navigationItem.leftBarButtonItem.customView;
-                _rightItem  = (UIButton*)_centerViewController.navigationItem.rightBarButtonItem.customView;
+                _centerView = self->_centerViewController.view;
+                self->_leftItem   = (UIButton*)self->_centerViewController.navigationItem.leftBarButtonItem.customView;
+                self->_rightItem  = (UIButton*)self->_centerViewController.navigationItem.rightBarButtonItem.customView;
             }
-            if ([_leftItem respondsToSelector:@selector(setSelected:)])
-                _leftItem.selected = YES;
-            if ([_rightItem respondsToSelector:@selector(setSelected:)])
-                _rightItem.selected = YES;
+            if ([self->_leftItem respondsToSelector:@selector(setSelected:)])
+                self->_leftItem.selected = YES;
+            if ([self->_rightItem respondsToSelector:@selector(setSelected:)])
+                self->_rightItem.selected = YES;
             
-            if (nil == _noUserInteractionView) {
-                _noUserInteractionView = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
-                [_centerViewController.view addSubview:_noUserInteractionView];
-                [_noUserInteractionView addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(closeAction:)]];
-                [self.view removeGestureRecognizer:_leftEdgePanGestrue];
-                [_noUserInteractionView addGestureRecognizer:_leftEdgePanGestrue];
-                [self.view removeGestureRecognizer:_rightEdgePanGesture];
-                [_noUserInteractionView addGestureRecognizer:_rightEdgePanGesture];
+            if (nil == self->_noUserInteractionView) {
+                self->_noUserInteractionView = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+                [self->_centerViewController.view addSubview:self->_noUserInteractionView];
+                [self->_noUserInteractionView addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(closeAction:)]];
+                [self.view removeGestureRecognizer:self->_leftEdgePanGestrue];
+                [self->_noUserInteractionView addGestureRecognizer:self->_leftEdgePanGestrue];
+                [self.view removeGestureRecognizer:self->_rightEdgePanGesture];
+                [self->_noUserInteractionView addGestureRecognizer:self->_rightEdgePanGesture];
                 if ([_centerView isKindOfClass:[UIScrollView class]])
                     [(UIScrollView*)_centerView setScrollEnabled:NO];
             }
         }
-        else if (_noUserInteractionView) {
-            if ([_noUserInteractionView.superview isKindOfClass:[UIScrollView class]])
-                [(UIScrollView*)_noUserInteractionView.superview setScrollEnabled:YES];
-            [_noUserInteractionView removeGestureRecognizer:_leftEdgePanGestrue];
-            [self.view addGestureRecognizer:_leftEdgePanGestrue];
-            [_noUserInteractionView removeGestureRecognizer:_rightEdgePanGesture];
-            [self.view addGestureRecognizer:_rightEdgePanGesture];
-            [_noUserInteractionView removeFromSuperview];
-            _noUserInteractionView = nil;
+        else if (self->_noUserInteractionView) {
+            if ([self->_noUserInteractionView.superview isKindOfClass:[UIScrollView class]])
+                [(UIScrollView*)self->_noUserInteractionView.superview setScrollEnabled:YES];
+            [self->_noUserInteractionView removeGestureRecognizer:self->_leftEdgePanGestrue];
+            [self.view addGestureRecognizer:self->_leftEdgePanGestrue];
+            [self->_noUserInteractionView removeGestureRecognizer:self->_rightEdgePanGesture];
+            [self.view addGestureRecognizer:self->_rightEdgePanGesture];
+            [self->_noUserInteractionView removeFromSuperview];
+            self->_noUserInteractionView = nil;
         }
     };
     if (direction != 0)
@@ -128,15 +128,15 @@ NSString *kAGRevealViewControllerWillCoverNotification = @"kAGRevealViewControll
             if (direction != 0) {
                 [[NSNotificationCenter defaultCenter] postNotificationName:kAGRevealViewControllerDidRevealNotification object:nil];
                 if ([self isLeftSideDisplayed]) {
-                    [_leftViewController viewDidAppear:animated];
+                    [self->_leftViewController viewDidAppear:animated];
                 }
                 else if ([self isRightSideDisplayed]) {
-                    [_rightViewController viewDidAppear:animated];
+                    [self->_rightViewController viewDidAppear:animated];
                 }
             }
             else {
                 [[NSNotificationCenter defaultCenter] postNotificationName:kAGRevealViewControllerDidCoverNotification object:nil];
-                _leftViewController.view.hidden = _rightViewController.view.hidden = YES;
+                self->_leftViewController.view.hidden = self->_rightViewController.view.hidden = YES;
             }
         }];
     }
@@ -151,30 +151,30 @@ NSString *kAGRevealViewControllerWillCoverNotification = @"kAGRevealViewControll
         if (_noUserInteractionView.superview) {
             if ([self isLeftSideDisplayed]) {
                 if (pt.x<0)
-                    _centerViewController.view.transform = CGAffineTransformMakeTranslation(CGRectGetWidth(_centerViewController.view.frame)-kOffsetX+pt.x, 0);
+                    self->_centerViewController.view.transform = CGAffineTransformMakeTranslation(CGRectGetWidth(self->_centerViewController.view.frame)-kOffsetX+pt.x, 0);
             }
             else if ([self isRightSideDisplayed])
             {
                 if (pt.x>0)
-                    _centerViewController.view.transform = CGAffineTransformMakeTranslation(-CGRectGetWidth(_centerViewController.view.frame)+kOffsetX+pt.x, 0);
+                    self->_centerViewController.view.transform = CGAffineTransformMakeTranslation(-CGRectGetWidth(self->_centerViewController.view.frame)+kOffsetX+pt.x, 0);
             }
         }
         else {
             if (pt.x<0) {
                 if (_rightViewController && !self.disableRightReveal) {
-                    if (CGRectGetMaxX(_centerViewController.view.frame) + ( pt.x - _centerViewController.view.transform.tx) > CGRectGetMinX(_rightViewController.view.frame)) {
+                    if (CGRectGetMaxX(self->_centerViewController.view.frame) + ( pt.x - self->_centerViewController.view.transform.tx) > CGRectGetMinX(_rightViewController.view.frame)) {
                         _rightViewController.view.hidden = NO;
                         [self.view insertSubview:_rightViewController.view aboveSubview:_leftViewController.view];
-                        _centerViewController.view.transform = CGAffineTransformMakeTranslation(pt.x, 0);
+                        self->_centerViewController.view.transform = CGAffineTransformMakeTranslation(pt.x, 0);
                     }
                 }
             }
             else if (pt.x>0) {
                 if (_leftViewController && !self.disableLeftReveal) {
-                    if (CGRectGetMinX(_centerViewController.view.frame) + (pt.x - _centerViewController.view.transform.tx) < CGRectGetMaxX(_leftViewController.view.frame)) {
+                    if (CGRectGetMinX(self->_centerViewController.view.frame) + (pt.x - self->_centerViewController.view.transform.tx) < CGRectGetMaxX(_leftViewController.view.frame)) {
                         _leftViewController.view.hidden = NO;
                         [self.view insertSubview:_leftViewController.view aboveSubview:_rightViewController.view];
-                        _centerViewController.view.transform = CGAffineTransformMakeTranslation(pt.x, 0);
+                        self->_centerViewController.view.transform = CGAffineTransformMakeTranslation(pt.x, 0);
                     }
                 }
             }
