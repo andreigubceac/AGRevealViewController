@@ -52,11 +52,9 @@ NSString *kAGRevealViewControllerWillCoverNotification = @"kAGRevealViewControll
         self.centerViewController.view.transform = CGAffineTransformMakeTranslation(direction * (CGRectGetWidth(self->_centerViewController.view.frame)-kOffsetX), 0);
         
         if ([self isLeftSideDisplayed]) {
-            [self.leftViewController viewWillAppear:animated];
             [self.view insertSubview:self.leftViewController.view aboveSubview:self.rightViewController.view];
         }
         else if ([self isRightSideDisplayed]) {
-            [self.rightViewController viewWillAppear:animated];
             [self.view insertSubview:self.rightViewController.view aboveSubview:self->_leftViewController.view];
         }
         
@@ -104,19 +102,31 @@ NSString *kAGRevealViewControllerWillCoverNotification = @"kAGRevealViewControll
             self->_noUserInteractionView = nil;
         }
     };
-    if (direction != 0)
-        [[NSNotificationCenter defaultCenter] postNotificationName:kAGRevealViewControllerWillRevealNotification object:(direction == 1 ? _leftViewController : _rightViewController)];
-    else
-        [[NSNotificationCenter defaultCenter] postNotificationName:kAGRevealViewControllerWillCoverNotification object:([self isLeftSideDisplayed] ? _leftViewController : _rightViewController)];
+    UIViewController *_workingViewController;
+    
+    if (direction != 0) {
+        _workingViewController = (direction == 1 ? _leftViewController : _rightViewController);
+        [[NSNotificationCenter defaultCenter] postNotificationName:kAGRevealViewControllerWillRevealNotification object:_workingViewController];
+        [_workingViewController viewWillAppear:animated];
+    }
+    else {
+        _workingViewController = ([self isLeftSideDisplayed] ? _leftViewController : ([self isRightSideDisplayed] ? _rightViewController : nil));
+        [[NSNotificationCenter defaultCenter] postNotificationName:kAGRevealViewControllerWillCoverNotification object:_workingViewController];
+        [_workingViewController  viewWillDisappear:animated];
+    }
+    
     _leftViewController.view.hidden = _rightViewController.view.hidden = NO;
     if (animated == NO) {
         applyTransformBlock();
         if (block)block();
-        if (direction != 0)
+        if (direction != 0) {
             [[NSNotificationCenter defaultCenter] postNotificationName:kAGRevealViewControllerWillCoverNotification object:nil];
+            [(direction == 1 ? _leftViewController : _rightViewController) viewWillDisappear:animated];
+        }
         else {
             [[NSNotificationCenter defaultCenter] postNotificationName:kAGRevealViewControllerDidCoverNotification object:nil];
             _leftViewController.view.hidden = _rightViewController.view.hidden = YES;
+            [_centerViewController viewWillAppear:animated];
         }
     }
     else {
@@ -127,16 +137,12 @@ NSString *kAGRevealViewControllerWillCoverNotification = @"kAGRevealViewControll
                 block();
             if (direction != 0) {
                 [[NSNotificationCenter defaultCenter] postNotificationName:kAGRevealViewControllerDidRevealNotification object:nil];
-                if ([self isLeftSideDisplayed]) {
-                    [self->_leftViewController viewDidAppear:animated];
-                }
-                else if ([self isRightSideDisplayed]) {
-                    [self->_rightViewController viewDidAppear:animated];
-                }
+                [_workingViewController viewDidAppear:animated];
             }
             else {
                 [[NSNotificationCenter defaultCenter] postNotificationName:kAGRevealViewControllerDidCoverNotification object:nil];
                 self->_leftViewController.view.hidden = self->_rightViewController.view.hidden = YES;
+                [_workingViewController viewDidDisappear:animated];
             }
         }];
     }
@@ -183,11 +189,12 @@ NSString *kAGRevealViewControllerWillCoverNotification = @"kAGRevealViewControll
     else {
         self.view.userInteractionEnabled = YES;
         int d = 0;
-        if ([self isLeftSideDisplayed])
+        if ([self isLeftSideDisplayed]) {
             d = _centerViewController.view.transform.tx <= CGRectGetWidth(self.view.frame)/2?0:1;
-        else if ([self isRightSideDisplayed])
+        }
+        else if ([self isRightSideDisplayed]) {
             d = _centerViewController.view.transform.tx >= -CGRectGetWidth(self.view.frame)/2?0:-1;
-        
+        }
         [self applyTransfromToDirection:d animated:YES completeBlock:nil];
     }
 }
@@ -199,11 +206,11 @@ NSString *kAGRevealViewControllerWillCoverNotification = @"kAGRevealViewControll
 }
 
 - (BOOL)isLeftSideDisplayed {
-    return (_centerViewController.view.transform.tx>0 && _leftViewController != nil);
+    return (_centerViewController.view.transform.tx >= kOffsetX && _leftViewController != nil);
 }
 
 - (BOOL)isRightSideDisplayed {
-    return (_centerViewController.view.transform.tx<0 && _rightViewController != nil);
+    return (fabs(_centerViewController.view.transform.tx) >= kOffsetX && _rightViewController != nil);
 }
 
 - (BOOL)isCenterSideDisplayed {
@@ -220,9 +227,11 @@ NSString *kAGRevealViewControllerWillCoverNotification = @"kAGRevealViewControll
 #pragma mark - public
 
 - (void)setRightViewController:(UIViewController *)rightViewController_ {
-    [_rightViewController viewWillDisappear:NO];
-    [_rightViewController.view removeFromSuperview];
-    [_rightViewController viewDidDisappear:NO];
+    if (_rightViewController.view.superview) {
+        [_rightViewController viewWillDisappear:NO];
+        [_rightViewController.view removeFromSuperview];
+        [_rightViewController viewDidDisappear:NO];
+    }
     [_rightViewController removeFromParentViewController];
     _rightViewController = rightViewController_;
     if (nil == _rightViewController)
@@ -238,9 +247,11 @@ NSString *kAGRevealViewControllerWillCoverNotification = @"kAGRevealViewControll
 }
 
 - (void)setLeftViewController:(UIViewController *)leftViewController_ {
-    [_leftViewController viewWillDisappear:NO];
-    [_leftViewController.view removeFromSuperview];
-    [_leftViewController viewDidDisappear:NO];
+    if (_leftViewController.view.superview) {
+        [_leftViewController viewWillDisappear:NO];
+        [_leftViewController.view removeFromSuperview];
+        [_leftViewController viewDidDisappear:NO];
+    }
     [_leftViewController removeFromParentViewController];
     _leftViewController = leftViewController_;
     if (nil == _leftViewController)
@@ -253,11 +264,12 @@ NSString *kAGRevealViewControllerWillCoverNotification = @"kAGRevealViewControll
 }
 
 - (void)setCenterViewController:(UIViewController *)centerViewController_ {
-    [_centerViewController viewWillDisappear:NO];
-    [_centerViewController.view removeFromSuperview];
+    if (_centerViewController.view.superview) {
+        [_centerViewController viewWillDisappear:NO];
+        [_centerViewController.view removeFromSuperview];
+        [_centerViewController viewDidDisappear:NO];
+    }
     [_centerViewController removeFromParentViewController];
-    [_centerViewController viewDidDisappear:NO];
-    
     _centerViewController = centerViewController_;
     NSAssert(_centerViewController!=nil, @"The front view Controller is NULL");
     [_centerViewController viewWillAppear:NO];
